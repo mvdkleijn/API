@@ -1,0 +1,6 @@
+td.success{
+border:1px solid green;
+}
+td.error{
+border:1px solid red;
+}
