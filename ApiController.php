@@ -21,21 +21,68 @@ class ApiController extends PluginController {
 	 */
 
 	public function documentation() {
-		$this->display(FORUM_VIEWS_BASE.'/userauth', array('users' => ForumUser::findById($id)));
+		$this->display(API_VIEWS_BASE.'/documentation');
         
     }
 
+	public function userAuthByAuthID($id=NULL) {
+		$authManager = new UserAuthManager();
+		return $this->userauth($authManager->getUserIDFromAuthID($id));
+	}
+
+
 	public function userauth($id=NULL) {
 		$authManager = new UserAuthManager();
-		$users = $authManager->userList();
+		
+		if(is_numeric($id)||$id==NULL) {
+			$users = $authManager->userList($id);
 
-		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
-		$temp_users=array();
-		foreach($users as $user)
-		{
-			$temp_users[] = $authManager->bindMetricsToUser($user);
+			#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
+			if (sizeof($users)>0)foreach($users as &$user){
+				$user=$authManager->bindMetricsToUser($user);
+			}
+			$this->display(API_VIEWS_BASE.'/userauth', array('id' => $id, 'users' => $users));
 		}
-		$users=$temp_users;
+		elseif($id == 'add') {
+//			if($_POST[name] == '' ) {
+//				Flash::set('error','This contract has NOT been added to our contracts - you need to give it a name');
+//				Observer::notify('log_event', 'Contract was NOT added: no name supplied', 'programme', 3);
+//				redirect(get_url('programme/contracts'));
+//			}
+//			else {
+//				$addContract = $contractManager->add($_POST);
+//				Flash::set('success',''.$_POST[name].' has been added to our contracts');
+//				Observer::notify('log_event', 'Contract was added: <strong>'.$_POST[name].'</strong>', 'programme', 5);
+//				redirect(get_url('programme/contracts'));
+//			}
+		}
+		elseif($id == 'delete') {
+//			$deleteContract = $contractManager->delete($_GET[id]);
+//			Flash::set('success','This contract has been deleted');
+//			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
+//			redirect(get_url('programme/contracts'));
+		}
+		else
+		{
+
+		}
+    }
+
+	public function methodusage($id=NULL) {
+
+		$authManager = new ApiUsageManager();
+		$usageList = $authManager->usageList();
+
+		if (sizeof($usageList)>0)
+		{
+			foreach ($usageList as &$i){ #assign reference instead of copying the value.
+				if (array_key_exists('accesstime', $i)){
+					$i['prettytime']=ApiUsageManager::bb_since($i['accesstime']);
+				}
+			}
+
+		}
+		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
 		if(is_numeric($id)) {
 //			$contracts = $contractManager->contractList($id);
 		}
@@ -63,7 +110,44 @@ class ApiController extends PluginController {
 
 		}
 
-		$this->display(API_VIEWS_BASE.'/userauth', array('id' => $id, 'users' => $users));
+		$this->display(API_VIEWS_BASE.'/apiusage', array('id' => $id, 'usageList' => $usageList));
+    }
+
+	public function allowedentities($id=NULL) {
+
+		$apiManager = new ApiManager();
+		$tables=$apiManager->getAllTables();
+		
+		
+		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
+		if(is_numeric($id)) {
+//			$contracts = $contractManager->contractList($id);
+		}
+		elseif($id == 'add') {
+//			if($_POST[name] == '' ) {
+//				Flash::set('error','This contract has NOT been added to our contracts - you need to give it a name');
+//				Observer::notify('log_event', 'Contract was NOT added: no name supplied', 'programme', 3);
+//				redirect(get_url('programme/contracts'));
+//			}
+//			else {
+//				$addContract = $contractManager->add($_POST);
+//				Flash::set('success',''.$_POST[name].' has been added to our contracts');
+//				Observer::notify('log_event', 'Contract was added: <strong>'.$_POST[name].'</strong>', 'programme', 5);
+//				redirect(get_url('programme/contracts'));
+//			}
+		}
+		elseif($id == 'delete') {
+//			$deleteContract = $contractManager->delete($_GET[id]);
+//			Flash::set('success','This contract has been deleted');
+//			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
+//			redirect(get_url('programme/contracts'));
+		}
+		else
+		{
+
+		}
+
+		$this->display(API_VIEWS_BASE.'/allowedtables', array('id' => $id, 'tables' => $tables));
     }
 
 

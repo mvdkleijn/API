@@ -15,6 +15,24 @@ class UserAuthManager {
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	function getUserIDFromAuthID($id)
+	{
+		$authtable = TABLE_PREFIX.self::TABLE_NAME;
+		$usertable = TABLE_PREFIX."user";
+
+		$sql="	SELECT {$usertable}.id from {$usertable}
+				INNER JOIN {$authtable} ON {$usertable}.id={$authtable}.user_id
+				WHERE {$authtable}.id={$id}";
+
+		#@id King Creosote is brilliant
+		if ($result=self::executeSql($sql)){
+			if (count($result)>0 && array_key_exists('id', $result[0])){
+				return $result[0]['id'];
+			}
+		}
+		return FALSE;
+	}
+
 	function userList($id=NULL) {
 		$authtable = TABLE_PREFIX.self::TABLE_NAME;
 		$usertable = TABLE_PREFIX."user";
@@ -22,7 +40,7 @@ class UserAuthManager {
 		$sql = "SELECT * FROM {$usertable},{$authtable}
 				WHERE {$usertable}.id={$authtable}.user_id";
 
-		if($id) $sql .= " AND id='$id'";
+		if($id) $sql .= " AND {$usertable}.id='$id'";
 		$sql .= " ORDER BY {$usertable}.name ASC";
 		
 		return self::executeSql($sql);
@@ -33,6 +51,7 @@ class UserAuthManager {
 		if (is_array($user))
 		{
 			$id=$user['id'];
+			
 			$sql = "SELECT count(*)  as total_hits, av_api_usage.accesstime as last_accessed
 					FROM av_api_usage
 					WHERE api_auth_id = {$id}

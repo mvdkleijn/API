@@ -42,6 +42,43 @@ class APIManager {
 			return 0;
 		}
 
+		# switch to 4x4 for this function, we're going offroad
+		#Gets all tablenames and associates them with the API permissions if they've been defined
+		function getAllTables()
+		{
+			$sql='SHOW TABLES';
+			$tablesArray=self::executeSql($sql);
+			
+			if (is_array($tablesArray) && sizeof($tablesArray)>0)
+			{				
+				foreach ($tablesArray as &$table)
+				{
+					#need to get details on $table
+					list($tablename_raw)=array_values($table);
+
+					#phewy:
+					$tablename=substr(	
+										$tablename_raw,
+										strpos($tablename_raw, TABLE_PREFIX)+strlen(TABLE_PREFIX),
+										strlen($tablename_raw)
+									);
+
+					$sql='	SELECT *
+							FROM '.TABLE_PREFIX.'api_allowedtables
+							WHERE tablename = \''.$tablename.'\'';
+					
+					$result = self::executeSql($sql);
+					if (is_array($result)&&sizeof($result)==1)
+					{
+						$table=array_merge($table,$result[0]);
+					}
+					$table['raw_name']=$tablename_raw;
+					$table['clean_name']=$tablename;
+				}
+			}
+			return $tablesArray;
+		}
+
         function getAllowedColumnsByTable($slug=FALSE)
         {
             #TODO sanitize input here.

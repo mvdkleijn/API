@@ -11,8 +11,18 @@ Plugin::setInfos(array(
 ));
 
 Plugin::addController('api', 'Api', 'administrator,developer', TRUE);
+
 if (defined('CMS_BACKEND')) {
 	#load different controller here? couldn't work out how to do this.
+	Dispatcher::addRoute(array(
+		'/api/userauth/:num'=> '/plugin/api/userauth/$1',
+		'/api/userauth/byauthid/:num'=> '/plugin/api/userAuthByAuthID/$1',
+		'/api/userauth'=> '/plugin/api/userauth',
+		
+		'/api/methodusage/:num' => '/plugin/api/methodusage/$1',
+		'/api/methodusage' => '/plugin/api/methodusage',
+
+	));
 } else {
 	
 	Dispatcher::addRoute(array(
@@ -29,4 +39,5 @@ if (defined('CMS_BACKEND')) {
 
 }
 include('models/ApiManager.php');
+include('models/ApiUsageManager.php');
 include('models/UserAuthManager.php');

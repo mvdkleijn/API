@@ -8,7 +8,7 @@
  */
 ?>
 
-<h1><?php echo __('Documentation'); ?></h1>
+<h1><?php echo __('API Documentation'); ?></h1>
 <p>
     <br />Coming soon, hold onto your hats!
 </p>
