@@ -9,6 +9,32 @@ class ApiUsageManager {
 		$this->db = $__CMS_CONN__;
 	}
 
+	#TODO: need to sterilise data
+	# api_auth_id, accesstime, api_method, ip_address, api_result
+	function logApiUsage($array)
+	{
+		if (!array_key_exists('accesstime', $array)){
+				$array['accesstime']=time();
+		}if (!array_key_exists('api_result', $array)){
+				$array['api_result']='unknown';
+		}if (!array_key_exists('ip_address', $array)){
+				$array['ip_address']=$_SERVER['REMOTE_ADDR'];
+		}if (!array_key_exists('api_auth_id', $array)){
+			#	TODO get here: handle, might be an authorised access which shold be logged anyway
+		};
+		$false=false;
+		$sql='INSERT INTO '.TABLE_PREFIX.self::TABLE_NAME;
+		$values = ' ';
+		foreach ($array as $key=>$value){
+			$values .= ($false)?',':'SET ';
+			$values .= " {$key} = '{$value}'";
+			$false=true;			
+		}
+		$sql.=$values;
+		$this->executeSql($sql);
+	}
+
+
 	function executeSql($sql) {
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
@@ -20,9 +46,40 @@ class ApiUsageManager {
 		$sql = "SELECT * FROM {$usagetable}";
 
 		if($id) $sql .= " WHERE id='$id'";
-		$sql .= "	GROUP BY {$usagetable}.api_method
-					ORDER BY {$usagetable}.accesstime DESC";
+		//$sql .= "	GROUP BY {$usagetable}.api_method";
+		$sql .= "	ORDER BY {$usagetable}.accesstime DESC";
 		
+		$result = self::executeSql($sql);
+		return $result;
+	}
+
+	function methodUsage()
+	{
+		$methods = $this->getAllUsedMethods();
+		$usagemetrics = array();
+		foreach($methods as $method)
+		{
+			$temp=array("method_name"=>$method['api_method']);
+
+			#get method stats:
+			$sql =  "SELECT count(*) as total_hits, FROM_UNIXTIME(av_api_usage.accesstime) as last_accessed, api_result
+					FROM ".TABLE_PREFIX.self::TABLE_NAME."
+					WHERE id = (SELECT id from av_api_usage WHERE api_method='".$temp['method_name']."' ORDER BY accesstime DESC LIMIT 1)
+					ORDER BY accesstime DESC";
+
+			list($metrics)=$this->executeSql($sql);
+			$usagemetrics[]=array_merge($temp,$metrics);
+		}
+		return $usagemetrics;
+	}
+
+	function getAllUsedMethods()
+	{
+		$usagetable = TABLE_PREFIX.self::TABLE_NAME;
+		$sql = "	SELECT api_method FROM {$usagetable}";
+		$sql .= "	GROUP BY {$usagetable}.api_method";
+		$sql .= "	ORDER BY api_method ASC";
+
 		$result = self::executeSql($sql);
 		return $result;
 	}

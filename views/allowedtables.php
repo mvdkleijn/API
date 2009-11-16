@@ -36,30 +36,32 @@
 <table cellspacing="0" summary="List of users filtered and sorted according to the criteria (if any) you have chosen.">
     <thead>
         <tr>
-            <th class="tc0" scope="col">Actual table name</th>
-            <th class="tc1" scope="col">DB independant name</th>
+            <th class="tc1" scope="col">Table</th>
             <th class="tc2" scope="col">Slug</th>
             <th class="tc2" scope="col">Columns</th>
+            <th class="tc2" scope="col">[Edit]</th>
         </tr>
     </thead>
     <tbody>
-        <?php $odd = true; foreach($tables as $table) { ?>
+        <?php $odd = true;print_r($tables);exit; foreach($tables as $table) { ?>
+			<?php $is_enabled=(array_key_exists('enabled', $table) && $table['enabled']==1);?>
+			<tr class="<?php echo $odd?'odd':'even'; ?>">
+				<td class="tc2 <?php echo $is_enabled?'enabled':'disabled'; ?>">
+					<a href="#">
+						<dfn title="<?php echo $table['raw_name']; ?>"><?php echo $table['clean_name']; ?></dfn>
+					</a>
+				</td>
+				<td class="tc2 <?php echo $is_enabled?'enabled':'disabled'; ?>"><?php echo (array_key_exists('tablename_slug', $table))?$table['tablename_slug']:''; ?></td>
+				<td class="tc2 <?php echo $is_enabled?'enabled':'disabled'; ?>"><a href='#'><?php echo (array_key_exists('columns', $table))?$table['columns']:'none:[add]'; ?></a></td>
+				<td class="tc2 <?php echo $is_enabled?'enabled':'disabled'; ?>">
+					<?php if ($is_enabled):?>
+						<a href='#'>[edit]</a>
+					<?php else: ?>
+						<a href='/admin/plugin/api/allowedentities/add?tablename_slug=<?echo $table['clean_name']?>&tablename=<?echo $table['raw_name']?>'>[add]</a>
+					<?php endif;?>
+				</td>
 
-        <tr class="<?php echo $odd?'odd':'even'; ?>">
-            <td class="tc0">
-				<a href="#">
-					<?php echo $table['raw_name']; ?>
-				</a>
-			</td>
-            <td class="tc1>">
-				<a href="#">
-					<?php echo $table['clean_name']; ?>
-				</a>
-			</td>
-            <td class="tc2"><?php echo (array_key_exists('tablename_slug', $table))?$table['tablename_slug']:''; ?></td>
-            <td class="tc2"><a href='#'><?php echo (array_key_exists('columns', $table))?$table['columns']:'none:[add]'; ?></a></td>
-            
-        </tr>
+			</tr>
         <?php $odd?$odd=false:$odd=true; } ?>
     </tbody>
 </table>

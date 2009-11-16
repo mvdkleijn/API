@@ -22,6 +22,9 @@ if (defined('CMS_BACKEND')) {
 		'/api/methodusage/:num' => '/plugin/api/methodusage/$1',
 		'/api/methodusage' => '/plugin/api/methodusage',
 
+		'/api/allowedentities/:any' => '/plugin/api/methodusage/$1',
+		'/api/allowedentities' => '/plugin/api/methodusage',
+
 	));
 } else {
 	

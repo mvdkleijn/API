@@ -1,5 +1,8 @@
-td.success{
-border:1px solid green;
+td.success,td.enabled{
+border:1px solid #00CF6A;
+}
+td.neutral{
+border:1px solid orange;
 }
 td.error{
 border:1px solid red;

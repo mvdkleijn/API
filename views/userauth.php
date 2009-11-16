@@ -43,7 +43,7 @@
             <td class="tc1"><?php echo $user['id']; ?></td>
             <td class="tc2"><?php echo $user['key']; ?></td>
             <td class="tc2"><?php echo $user['total_hits']; ?></td>
-            <td class="tc2"><?php echo $user['last_accessed']; ?></td>
+            <td class="tc2"><?php echo $user['prettytime']; ?> ago</td>
             <td class="tc2">TRUE</td>
         </tr>
         <?php $odd?$odd=false:$odd=true; } ?>
