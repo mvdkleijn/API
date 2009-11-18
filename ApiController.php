@@ -113,8 +113,7 @@ class ApiController extends PluginController {
 	public function allowedentities($id=NULL) {
 
 		$apiManager = new ApiManager();
-		$tables=$apiManager->getAllTables();
-		
+		$tables=$apiManager->getAllTables();		
 		
 		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
 		if(is_numeric($id)) {
@@ -132,10 +131,13 @@ class ApiController extends PluginController {
 //			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
 //			redirect(get_url('programme/contracts'));
 		}
-		else
-		{
-
+		else{
+			$entity = $apiManager->update($_POST);
+			Flash::set('success',''.$_GET['tablename'].' has been updated');
+			Observer::notify('log_event', 'Table was updated for API access: <strong>'.$_GET['tablename'].'</strong>', 'programme', 5);
+			redirect(get_url('plugin/api/allowedentities'));
 		}
+		
 
 		$this->display(API_VIEWS_BASE.'/allowedtables', array('id' => $id, 'tables' => $tables));
     }

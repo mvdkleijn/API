@@ -59,27 +59,30 @@ class APIManager {
 					#need to get details on $table
 					list($tablename_raw)=array_values($table);
 
-					#phewy:
+					#phewy: clean table name of prefix
 					$tablename=substr(	
 										$tablename_raw,
 										strpos($tablename_raw, TABLE_PREFIX)+strlen(TABLE_PREFIX),
 										strlen($tablename_raw)
 									);
-
+					
 					$sql='	SELECT *
 							FROM '.TABLE_PREFIX.'api_allowedtables
 							WHERE tablename = \''.$tablename.'\'';
 					
 					$result = self::executeSql($sql);
-					echo $sql."\n";
+					
 					if (is_array($result)&&sizeof($result)==1)
 					{
 						$table=array_merge($table,$result[0]);
 					}
 					$table['raw_name']=$tablename_raw;
 					$table['clean_name']=$tablename;
+
+
+					//print $sql."\n";
 				}
-			}
+			}//die();
 			return $tablesArray;
 		}
 
@@ -143,6 +146,7 @@ class APIManager {
 					description='".filter_var($_POST['description'], FILTER_SANITIZE_MAGIC_QUOTES)."'
 				WHERE id='".filter_var($_POST['id'], FILTER_SANITIZE_STRING)."'
 		";
+		die('about to update: '.$sql);
 		return self::executeSql($sql);
 	}
 
@@ -150,7 +154,7 @@ class APIManager {
 		$sql = "INSERT INTO ".TABLE_PREFIX.self::TABLE_NAME."
 				VALUES ('',
 						'".filter_var($GET['tablename_slug'], FILTER_SANITIZE_STRING)."',
-						'".filter_var($GET['tablename'],  FILTER_SANITIZE_STRING)."',
+						'".filter_var($GET['tablename_slug'],  FILTER_SANITIZE_STRING)."',
 						'',
 						'1')
 		";

@@ -43,7 +43,7 @@
         </tr>
     </thead>
     <tbody>
-        <?php $odd = true;print_r($tables);exit; foreach($tables as $table) { ?>
+        <?php $odd = true; foreach($tables as $table) { ?>
 			<?php $is_enabled=(array_key_exists('enabled', $table) && $table['enabled']==1);?>
 			<tr class="<?php echo $odd?'odd':'even'; ?>">
 				<td class="tc2 <?php echo $is_enabled?'enabled':'disabled'; ?>">
