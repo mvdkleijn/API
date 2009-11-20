@@ -1,6 +1,9 @@
 <?php
-/* @author Ian Dundas with Band-x.org */
-
+/*
+ * API plugin for Wolf CMS
+ * November 2009
+ * @author Ian Dundas for Band-x.org
+ */
 define('API_VIEWS_BASE', 'api/views');
 Plugin::setInfos(array(
 	'id'		=> 'api',

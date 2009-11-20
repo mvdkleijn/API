@@ -1,7 +1,8 @@
 <?php
 /*
- * @author Ian Dundas with Band-x.org
- * TODO refactor all this.
+ * API plugin for Wolf CMS
+ * November 2009
+ * @author Ian Dundas for Band-x.org
  */
 class ApiController extends PluginController {
 
