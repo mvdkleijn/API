@@ -1,9 +1,13 @@
-td.success,td.enabled{
+.success,.enabled{
 border:1px solid #00CF6A;
 }
-td.neutral{
+.neutral,.notenabled{
 border:1px solid orange;
 }
-td.error{
+.disabled
+{
+border:1px solid grey;
+}
+.error{
 border:1px solid red;
 }

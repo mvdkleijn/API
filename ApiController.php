@@ -25,7 +25,7 @@ class ApiController extends PluginController {
 	 */
 
 	public function documentation() {
-		$this->display(API_VIEWS_BASE.'/documentation');
+		$this->display(API_VIEWS_BASE.'/backend/documentation/index');
         
     }
 
@@ -49,7 +49,7 @@ class ApiController extends PluginController {
 					$user['prettytime']=ApiUsageManager::bb_since($user['last_accessed']);
 				}
 			}
-			$this->display(API_VIEWS_BASE.'/userauth', array('id' => $id, 'users' => $users));
+			$this->display(API_VIEWS_BASE.'/backend/users/userauth', array('id' => $id, 'users' => $users));
 		}
 		elseif($id == 'add') {
 //			if($_POST[name] == '' ) {
@@ -89,7 +89,7 @@ class ApiController extends PluginController {
 				}
 			}
 		}
-		$this->display(API_VIEWS_BASE.'/apimethodstream', array('usageList' => $usageList));
+		$this->display(API_VIEWS_BASE.'/backend/apicalls/stream', array('usageList' => $usageList));
     }
 
 
@@ -107,39 +107,71 @@ class ApiController extends PluginController {
 			}
 		}
 		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
-		$this->display(API_VIEWS_BASE.'/apiusage', array('id' => $id, 'usageMetrics' => $usageMetrics));
+		$this->display(API_VIEWS_BASE.'/backend/apicalls/overview', array('id' => $id, 'usageMetrics' => $usageMetrics));
     }
 
-	public function allowedentities($id=NULL) {
+	public function allowedentities($token=NULL) {
 
 		$apiManager = new ApiManager();
 		$tables=$apiManager->getAllTables();		
 		
-		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
-		if(is_numeric($id)) {
-//			$contracts = $contractManager->contractList($id);
+		#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead		
+		#View single row:
+		if(is_numeric($token))
+		{
+			if(isset($_POST)&&!empty($_POST))
+			{
+				if (array_key_exists('enabled',$_POST))
+					$_POST['enabled']=1;
+				else
+					$_POST['enabled']=0;
+
+				if(isset($_POST['columns'])&&!empty($_POST['columns']))
+					$_POST['columns']=implode(';',$_POST['columns']);
+
+				$allowed_fields = array_flip(array('id','tablename','tablename_slug','columns','enabled'));
+				$data = array_intersect_key ($_POST,$allowed_fields);
+
+				$table = array();
+				#If we've posted to this URL, we're editing:
+				if (0<sizeof($data))
+				{
+					$entity = $apiManager->update_array($data);
+					Flash::set('success',''.$data['tablename'].' has been updated');
+					Observer::notify('log_event', 'Table was updated for API access: <strong>'.$data['tablename'].'</strong>', 'programme', 5);
+					redirect(get_url('plugin/api/allowedentities'));
+					exit;
+				}
+			}
+			#Else we just want a look at it (implicit else, because exit; would stop it getting here if was successful at updating)
+			$table = $apiManager->doSelectById($token);
+			$table['allcolumns'] = $apiManager->getColumnNamesByTable($table['tablename']);
+			$this->display(API_VIEWS_BASE.'/backend/allowedentities/single', array('id' =>$token, 'table' => $table));
 		}
-		elseif($id == 'add') {
+		#Add
+		elseif($token == 'add') {
 			$addEntity = $apiManager->add($_GET);
 			Flash::set('success',''.$_GET['tablename'].' has been enabled: please add some columns');
 			Observer::notify('log_event', 'Table was enabled for API access: <strong>'.$_GET['tablename'].'</strong>', 'programme', 5);
 			redirect(get_url('plugin/api/allowedentities'));
 		}
-		elseif($id == 'delete') {
+		#Delete
+		elseif($token == 'delete') {die('disabled2');
 //			$deleteContract = $contractManager->delete($_GET[id]);
 //			Flash::set('success','This contract has been deleted');
 //			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
 //			redirect(get_url('programme/contracts'));
 		}
+		#Edit
 		else{
-			$entity = $apiManager->update($_POST);
-			Flash::set('success',''.$_GET['tablename'].' has been updated');
-			Observer::notify('log_event', 'Table was updated for API access: <strong>'.$_GET['tablename'].'</strong>', 'programme', 5);
-			redirect(get_url('plugin/api/allowedentities'));
+			$this->display(API_VIEWS_BASE.'/backend/allowedentities/list', array('id' =>$token, 'tables' => $tables));
+			//deprecated
+			//$entity = $apiManager->update($_POST);
+			//Flash::set('success',''.$_GET['tablename'].' has been updated');
+			//Observer::notify('log_event', 'Table was updated for API access: <strong>'.$_GET['tablename'].'</strong>', 'programme', 5);
+			//redirect(get_url('plugin/api/allowedentities'));
 		}
-		
-
-		$this->display(API_VIEWS_BASE.'/allowedtables', array('id' => $id, 'tables' => $tables));
+		//
     }
 
 

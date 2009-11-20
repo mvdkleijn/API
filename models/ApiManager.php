@@ -85,10 +85,18 @@ class APIManager {
 			}//die();
 			return $tablesArray;
 		}
-
+		function getColumnNamesByTable($tablename)
+		{
+			$sql = "SELECT column_name
+					FROM information_schema.columns
+					WHERE table_schema='".DB_DATABASE_NAME."' AND table_name = '".TABLE_PREFIX.$tablename."'";
+			
+			return $result = $this->executeSql($sql);			
+		}
         function getAllowedColumnsByTable($slug=FALSE)
         {
-       }
+
+		}
 
         function getTableNameBySlug($slug=FALSE)
         {
@@ -108,8 +116,7 @@ class APIManager {
         }
 
         function doSelectByColumns($slug=FALSE, $allowed_columns=array(),$id=NULL)
-        {
-			
+        {			
             if ($table_name = $this->getTableNameBySlug($slug))
             {
                 if (is_array($allowed_columns)&&sizeof($allowed_columns)>0)
@@ -127,6 +134,18 @@ class APIManager {
             return array();
         }
 
+	function doSelectById($id)
+	{
+		if (isset($id)&&is_numeric($id))
+		{
+			$sql =	"SELECT * ".
+					"FROM   ".TABLE_PREFIX.self::TABLE_NAME." ".
+					"WHERE id='{$id}'";
+			list($result) = self::executeSql($sql);
+			return $result;
+		}
+	}
+
 
 	function executeSql($sql) {
 		$stmt = $this->db->prepare($sql);
@@ -139,6 +158,34 @@ class APIManager {
 		if($id) $sql .= " WHERE id='$id'";
 		return self::executeSql($sql);
 	}
+
+
+      function update_array($array)
+      {
+          global $table_prefix;
+
+          if (empty($array)     ||!isset($array))     return FALSE;
+          if (is_object($array)){
+            $array=(array)$array;
+          }
+          if (0==sizeof($array))                return FALSE;
+          if (!array_key_exists('id', $array))  return FALSE;
+
+          $id = $array['id'];
+          unset($array['id'],$array['action'],$array['submit']);
+
+          $comma='';
+          $sql = "update ".TABLE_PREFIX.self::TABLE_NAME." SET ";
+          foreach ($array as $key=>$value){
+            $sql.= "{$comma} {$key} = '{$value}'";
+            $comma=',';
+          }
+          $sql.= " WHERE id = {$id}";
+          self::executeSql($sql);
+          if (mysql_error()){ die('dev error: '.mysql_error().' ... '.$sql);}
+          return;
+      }
+
 
 	function update($_POST) {
 		$sql = "UPDATE ".TABLE_PREFIX.self::TABLE_NAME."
