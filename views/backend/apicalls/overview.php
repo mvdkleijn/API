@@ -11,6 +11,7 @@
 ?>
 
 <h1><?php echo __('API Method Usage'); ?></h1>
+<p>Viewing: <a href="/admin/plugin/api/methodusage">Overview</a> | <a href="/admin/plugin/api/methodstream">Stream</a></p>
 <div id="apiUsage">
 <table cellspacing="0" summary="List of users filtered and sorted according to the criteria (if any) you have chosen.">
     <thead>

@@ -41,7 +41,7 @@ $currentcolumns = array_flip(explode (';', $columns));
 		 <label for="enabled">Enabled:</label>
 		 <input type="checkbox" name="enabled" id="enabled" <?php echo ($enabled==1)?'checked':''?> />
 
-		 <label for="submit">Enabled:</label>
+		 <label for="submit">Submit:</label>
 		 <input type="submit" name="submit" id="submit" />
 
 		 <input type="hidden" name="id" value="<?php echo $id?>" />

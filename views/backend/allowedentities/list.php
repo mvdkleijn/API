@@ -34,14 +34,7 @@
  -->
 
 <?php //print_r($tables);exit;?>
-<script>
-var $j = jQuery.noConflict();
 
- $j(document).ready(function(){
-   alert('test')
- });
-
-</script>
 <p>Click row to add and edit</p>
 <table cellspacing="0" summary="List of users filtered and sorted according to the criteria (if any) you have chosen.">
     <thead>

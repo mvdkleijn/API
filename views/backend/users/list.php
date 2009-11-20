@@ -10,6 +10,7 @@
 
 <h1><?php echo __('User Authentication'); ?></h1>
 <div id="api">
+<p><a href="/admin/plugin/api/userauth/add">Add user</a></p>
 <table cellspacing="0" summary="List of users filtered and sorted according to the criteria (if any) you have chosen.">
     <thead>
         <tr>
@@ -17,8 +18,8 @@
             <th class="tc1" scope="col">ID</th>
             <th class="tc2" scope="col">Key</th>
             <th class="tc2" scope="col">Total Hits</th>
-            <th class="tc2" scope="col">Last Used</th>
-            <th class="tc2" scope="col">Enabled?</th>
+            <th class="tc2" scope="col">Throttle Limit</th>
+            <th class="tc2" scope="col">Last Accessed</th>
         </tr>
     </thead>
     <tbody>
@@ -36,15 +37,22 @@
             [updated_by_id] =>
             [user_id] => 4
             [key] => password-->
-
-
-        <tr class="<?php echo $odd?'odd':'even'; ?>">
-            <td class="tc0"><a href="#"><?php echo $user['username']; ?></a></td>
-            <td class="tc1"><?php echo $user['id']; ?></td>
-            <td class="tc2"><?php echo $user['key']; ?></td>
-            <td class="tc2"><?php echo $user['total_hits']; ?></td>
-            <td class="tc2"><?php echo $user['prettytime']; ?> ago</td>
-            <td class="tc2">TRUE</td>
+		<?php
+			if ($user['enabled']==1):
+				$class='enabled';
+			  else:
+				$class='disabled';
+			endif;
+		?>
+		<?php $editlink = '/admin/plugin/api/userauth/'.$user['id'];?>
+        <tr class="<?php echo $odd?'odd':'even'; ?>"  onclick="javascript: document.location.href='<?php echo $editlink;?>';">
+            <td class="tc0 <?php echo $class?>"><a href="#"><?php echo $user['username']; ?></a></td>
+            <td class="tc1 <?php echo $class?>"><?php echo $user['id']; ?></td>
+            <td class="tc2 <?php echo $class?>"><?php echo $user['key']; ?></td>
+            <td class="tc2 <?php echo $class?>"><?php echo $user['total_hits']; ?></td>
+            <td class="tc2 <?php echo $class?>"><?php echo $user['throttle_limit']; ?></td>
+            <td class="tc2 <?php echo $class?>"><?php echo (isset($user['prettytime']))?$user['prettytime'].' ago':' never'; ?>
+			</td>
         </tr>
         <?php $odd?$odd=false:$odd=true; } ?>
     </tbody>

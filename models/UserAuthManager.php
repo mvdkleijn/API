@@ -15,6 +15,69 @@ class UserAuthManager {
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	#TODO: remove replicated functionality at userList($id=NULL)
+	function doSelectById($id)
+	{
+		if (isset($id)&&is_numeric($id))
+		{
+			$sql =	"SELECT * ".
+					"FROM   ".TABLE_PREFIX.self::TABLE_NAME." ".
+					"WHERE id='{$id}'";
+			list($result) = self::executeSql($sql);
+			return $result;
+		}
+	}
+
+	function update_array($array)
+      {
+          global $table_prefix;
+
+          if (empty($array)     ||!isset($array))     return FALSE;
+          if (is_object($array)){
+            $array=(array)$array;
+          }
+          if (0==sizeof($array))                return FALSE;
+          if (!array_key_exists('id', $array))  return FALSE;
+
+          $id = $array['id'];
+          unset($array['id'],$array['action'],$array['submit']);
+
+          $comma='';
+          $sql = "update ".TABLE_PREFIX.self::TABLE_NAME." SET ";
+          foreach ($array as $key=>$value){
+            $sql.= "{$comma} ".TABLE_PREFIX.self::TABLE_NAME.".{$key} = '{$value}'";
+            $comma=',';
+          }
+          $sql.= " WHERE ".TABLE_PREFIX.self::TABLE_NAME.".id = {$id}";
+          self::executeSql($sql);
+          if (mysql_error()){ die('dev error: '.mysql_error().' ... '.$sql);}
+          return;
+      }
+
+
+	  function insert_array($array)
+      {
+          global $table_prefix;
+
+          if (empty($array)     ||!isset($array))     return FALSE;
+          if (is_object($array)){
+            $array=(array)$array;
+          }
+          if (0==sizeof($array))                return FALSE;
+          unset($array['id'],$array['action'],$array['submit']);
+
+          $comma='';
+          $sql = "INSERT INTO ".TABLE_PREFIX.self::TABLE_NAME." SET ";
+          foreach ($array as $key=>$value){
+            $sql.= "{$comma} ".TABLE_PREFIX.self::TABLE_NAME.".{$key} = '{$value}'";
+            $comma=',';
+          }
+          
+          self::executeSql($sql);
+          if (mysql_error()){ die('dev error: '.mysql_error().' ... '.$sql);}
+          return;
+      }
+
 	function getUserIDFromAuthID($id)
 	{
 		$authtable = TABLE_PREFIX.self::TABLE_NAME;
@@ -43,6 +106,15 @@ class UserAuthManager {
 		if($id) $sql .= " AND {$usertable}.id='$id'";
 		$sql .= " ORDER BY {$usertable}.name ASC";
 		
+		return self::executeSql($sql);
+	}
+
+	function globalUserUsernameList() {
+		$usertable = TABLE_PREFIX."user";
+
+		$sql = "SELECT id, username FROM {$usertable} ";
+		$sql.= "ORDER BY {$usertable}.username ASC";
+
 		return self::executeSql($sql);
 	}
 

@@ -25,57 +25,10 @@ class ApiController extends PluginController {
 	 */
 
 	public function documentation() {
-		$this->display(API_VIEWS_BASE.'/backend/documentation/index');
-        
+		$this->display(API_VIEWS_BASE.'/backend/documentation/index');        
     }
 
-	public function userAuthByAuthID($id=NULL) {
-		$authManager = new UserAuthManager();
-		return $this->userauth($authManager->getUserIDFromAuthID($id));
-	}
-
-
-	public function userauth($id=NULL) {
-		$authManager = new UserAuthManager();
-		
-		if(is_numeric($id)||$id==NULL) {
-			$users = $authManager->userList($id);
-
-			#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
-			if (sizeof($users)>0)foreach($users as &$user){
-				$user=$authManager->bindMetricsToUser($user);
-
-				if (array_key_exists('last_accessed', $user)){
-					$user['prettytime']=ApiUsageManager::bb_since($user['last_accessed']);
-				}
-			}
-			$this->display(API_VIEWS_BASE.'/backend/users/userauth', array('id' => $id, 'users' => $users));
-		}
-		elseif($id == 'add') {
-//			if($_POST[name] == '' ) {
-//				Flash::set('error','This contract has NOT been added to our contracts - you need to give it a name');
-//				Observer::notify('log_event', 'Contract was NOT added: no name supplied', 'programme', 3);
-//				redirect(get_url('programme/contracts'));
-//			}
-//			else {
-//				$addContract = $contractManager->add($_POST);
-//				Flash::set('success',''.$_POST[name].' has been added to our contracts');
-//				Observer::notify('log_event', 'Contract was added: <strong>'.$_POST[name].'</strong>', 'programme', 5);
-//				redirect(get_url('programme/contracts'));
-//			}
-		}
-		elseif($id == 'delete') {
-//			$deleteContract = $contractManager->delete($_GET[id]);
-//			Flash::set('success','This contract has been deleted');
-//			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
-//			redirect(get_url('programme/contracts'));
-		}
-		else
-		{
-
-		}
-    }
-
+	/* API CALL STREAM CONTROLLER */
 	public function methodstream($id=NULL) {
 
 		$authManager = new ApiUsageManager();
@@ -92,7 +45,7 @@ class ApiController extends PluginController {
 		$this->display(API_VIEWS_BASE.'/backend/apicalls/stream', array('usageList' => $usageList));
     }
 
-
+	/* API CALL OVERVIEW CONTROLLER */
 	public function methodusage($id=NULL) {
 
 		$authManager = new ApiUsageManager();
@@ -110,8 +63,8 @@ class ApiController extends PluginController {
 		$this->display(API_VIEWS_BASE.'/backend/apicalls/overview', array('id' => $id, 'usageMetrics' => $usageMetrics));
     }
 
+	/* ALLOWED TABLE ENTITES CONTROLLER */
 	public function allowedentities($token=NULL) {
-
 		$apiManager = new ApiManager();
 		$tables=$apiManager->getAllTables();		
 		
@@ -162,19 +115,85 @@ class ApiController extends PluginController {
 //			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
 //			redirect(get_url('programme/contracts'));
 		}
-		#Edit
 		else{
 			$this->display(API_VIEWS_BASE.'/backend/allowedentities/list', array('id' =>$token, 'tables' => $tables));
-			//deprecated
-			//$entity = $apiManager->update($_POST);
-			//Flash::set('success',''.$_GET['tablename'].' has been updated');
-			//Observer::notify('log_event', 'Table was updated for API access: <strong>'.$_GET['tablename'].'</strong>', 'programme', 5);
-			//redirect(get_url('plugin/api/allowedentities'));
 		}
 		//
     }
 
+	/* USER AUTHENTICATION CONTROLLER */
+	public function userauth($token=NULL) {
+		$authManager = new UserAuthManager();
 
+		if((isset($_POST)&&!empty($_POST)))
+		{
+			if (array_key_exists('enabled',$_POST))
+				$_POST['enabled']=1;
+			else
+				$_POST['enabled']=0;
+
+			$allowed_fields = array_flip(array('user_id','id','key','throttle_limit','enabled'));
+			$data = array_intersect_key ($_POST,$allowed_fields);
+
+			if (0<sizeof($data))
+			{
+				if(is_numeric($token))
+				{
+					$entity = $authManager->update_array($data);
+					Flash::set('success','User record has been updated');
+					Observer::notify('log_event', 'User table updated: <strong>User '.$data['user_id'].'</strong>', 'programme', 5);
+					redirect(get_url('plugin/api/userauth'));
+					exit;
+				}
+				else
+				{
+					$entity = $authManager->insert_array($data);
+					Flash::set('success','User auth has been added');
+					Observer::notify('log_event', 'Userauth table updated: <strong>User '.$data['user_id'].'</strong>', 'programme', 5);
+					redirect(get_url('plugin/api/userauth'));
+					exit;
+				}
+			}
+		}
+		else if(is_numeric($token))
+		{
+			#Else we just want a look at it (implicit else, because exit; would stop it getting here if was successful at updating)
+			$user = $authManager->doSelectById($token);
+			$user = $authManager->bindMetricsToUser($user);
+			$allusers=$authManager->globalUserUsernameList();
+			$this->display(API_VIEWS_BASE.'/backend/users/single', array('id' =>$token, 'user' => $user,'allusers'=>$allusers));
+		}
+		#Add
+		elseif($token == 'add') {
+			$allusers=$authManager->globalUserUsernameList();
+			$this->display(API_VIEWS_BASE.'/backend/users/single', array('id' =>$token, 'user' => array(),'allusers'=>$allusers));
+		}
+		#Delete
+		elseif($token == 'delete') {die('disabled2');
+//			$deleteContract = $contractManager->delete($_GET[id]);
+//			Flash::set('success','This contract has been deleted');
+//			Observer::notify('log_event', 'Contract was deleted', 'programme', 5);
+//			redirect(get_url('programme/contracts'));
+		}
+		else{
+			$users = $authManager->userList();
+
+			#TODO: would be nice to write a shit hot SQL query to do this at getuser time instead
+			if (sizeof($users)>0)foreach($users as &$user){
+				$user=$authManager->bindMetricsToUser($user);
+
+				if (array_key_exists('last_accessed', $user)&&isset($user['last_accessed'])){
+					$user['prettytime']=ApiUsageManager::bb_since($user['last_accessed']);
+				}
+			}
+			$this->display(API_VIEWS_BASE.'/backend/users/list', array('users' => $users));
+		}		
+    }
+	/* USER AUTHENTICATION BY AUTHID CONTROLLER */
+	public function userAuthByAuthID($id=NULL) {
+		$authManager = new UserAuthManager();
+		return $this->userauth($authManager->getUserIDFromAuthID($id));
+	}
 
 
 
@@ -183,8 +202,6 @@ class ApiController extends PluginController {
 	 * CAN I MOVE THESE INTO A SEPARATE CONTROLLER?
 	 * -----------------------------------------------
 	 */
-
-
 	public function isAuthenticated($array) {
 
 		if(array_key_exists('authid', $array)&&array_key_exists('authkey', $array))
