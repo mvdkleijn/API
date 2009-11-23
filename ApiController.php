@@ -231,13 +231,12 @@ class ApiController extends PluginController {
 			$this->stats['api_method']='fetchall|'.$slug.'|'.$format;
 		}
 		if (!array_key_exists('api_auth_id', $this->stats)){
-			$this->stats['api_auth_id']=$_GET['authid'];
+			$this->stats['api_auth_id']=(array_key_exists('authid',$_GET))?$_GET['authid']:'[undefined]';
 		}
 
 		if ($this->isAuthenticated($_GET)):
 			#need to know what columns are to be in returned dataset
 			$allowed_columns = $this->api_manager->getAllowedColumnsByTable($slug);
-
 			$result_set = array();
 			if (sizeof($allowed_columns)>0) {
 				$result_set = $this->api_manager->doSelectByColumns($slug, $allowed_columns, $id);

@@ -95,9 +95,17 @@ class APIManager {
 			
 			return $result = $this->executeSql($sql);			
 		}
+
         function getAllowedColumnsByTable($slug=FALSE)
         {
-
+			if ($slug){
+				$sql = "select columns from ".TABLE_PREFIX."api_allowedtables where tablename_slug='{$slug}' and enabled=1";
+				if ($result = self::executeSql($sql)){
+					list($result)=$result;
+					return explode(';',$result['columns']);
+				}
+			}
+			return array();
 		}
 
         function getTableNameBySlug($slug=FALSE)
