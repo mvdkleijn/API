@@ -352,7 +352,10 @@ class ApiController extends PluginController {
 
 		}
 		// pass back as string. or simple xml object if you want!
-		return $xml->asXML();
+
+		$dom = dom_import_simplexml($xml)->ownerDocument;
+		$dom->formatOutput = true;
+		return $dom->saveXML();
 	}
 
 
