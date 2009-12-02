@@ -89,12 +89,19 @@ class APIManager {
 		}
 		function getColumnNamesByTable($tablename)
 		{
-			$sql = "SELECT column_name
-					FROM information_schema.columns
-					WHERE table_schema='".DB_DATABASE_NAME."' AND table_name = '".TABLE_PREFIX.$tablename."'";
-			
-			return $result = $this->executeSql($sql);			
+                        $sql = "SELECT column_name
+                                FROM information_schema.columns
+                                WHERE table_schema='".DB_DATABASE_NAME."' AND table_name = '".TABLE_PREFIX.$tablename."'";
+
+                        $result = $this->executeSql($sql);
+                        $return = array();
+                        if(!empty($result))foreach($result as $key=>$value){
+                            $return=array_merge($return,array_flip($value));
+                        }
+                        return $return;
 		}
+
+
 
         function getAllowedColumnsByTable($slug=FALSE)
         {
